@@ -1,5 +1,7 @@
 import "fmt"
 
+
+var wg sync.WaitGroup 
 func main() {
 	// Here go is for gorountines
 	// Goroutines are lightweight threads managed by the Go runtime. They allow you to run functions concurrently, making it easier to handle multiple tasks simultaneously without the overhead of traditional threads.
@@ -13,13 +15,59 @@ func main() {
 
 
 
-	go help("hello")
-	help("world")
+	// go help("hello")
+	// help("world")
+
+	websitelist := []string{
+		"https://lco.dev",
+		"https://go.dev",
+		"https://google.com",
+		"https://fb.com",
+		"https://github.com",
+	}
+
+	for _,web := range websitelist {
+		go getStatusCode(web)
+		wg.Add(1);
+	}
+
+	wg.wait();
+
+	// How WaitGroups Work
+// Add: Increment the WaitGroup counter to indicate that new goroutines are being added.
+// Done: Decrement the WaitGroup counter to indicate that a goroutine has finished its work.
+// Wait: Block until the WaitGroup counter goes back to zero, indicating that all goroutines have completed their work.
+
+// Explanation
+// worker function: This function simulates a worker by printing a start message, sleeping for one second (to simulate some work), and then printing a done message. The defer wg.Done() statement ensures that the WaitGroup counter is decremented when the goroutine finishes, even if the function exits early.
+
+// WaitGroup Initialization: In the main function, a WaitGroup variable wg is declared.
+
+// Adding Workers: A loop is used to start multiple worker goroutines. Before starting each goroutine, wg.Add(1) increments the WaitGroup counter.
+
+// Waiting for Completion: After starting all the worker goroutines, wg.Wait() is called to block the main function until all worker goroutines have called wg.Done() and the counter has returned to zero.
+
+// Output: The program prints messages indicating when each worker starts and finishes, and finally, a message indicating that all workers are done.
+
 }
 
-func help(string x) {
-	for i := 0; i < 6; i++ {
-		time.Sleep(3*time.Milisecond)
-		fmt.Println(x)
+func getStatusCode(endpoint string){
+	defer wg.Done()
+
+	//  the defer statement is used to ensure that a function call is performed later in a program's execution, typically for purposes of cleanup.
+	
+	res, err := http.Get(endpoint)
+
+	if err != nil {
+		fmt.Println("OOPS in endpoint")
+	} else {
+		fmt.Printf("%d status code for %s\n", res.StatusCode, endpoint)
 	}
 }
+
+// func help(string x) {
+// 	for i := 0; i < 6; i++ {
+// 		time.Sleep(3*time.Milisecond)
+// 		fmt.Println(x)
+// 	}
+// }
